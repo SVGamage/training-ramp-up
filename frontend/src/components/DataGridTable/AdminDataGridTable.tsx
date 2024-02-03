@@ -174,7 +174,7 @@ function EditToolbar(props: IEditToolbarProps) {
   );
 }
 
-const DataGridTable = () => {
+const AdminDataGridTable = () => {
   const initialRows: GridRowsProp = useSelector(
     (state: RootState) => state.student.students
   );
@@ -953,4 +953,4 @@ const DataGridTable = () => {
   );
 };
 
-export default DataGridTable;
+export default AdminDataGridTable;
