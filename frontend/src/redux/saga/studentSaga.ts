@@ -1,4 +1,10 @@
-import { takeLatest, put, call, takeLeading } from "redux-saga/effects";
+import {
+  takeLatest,
+  put,
+  call,
+  takeLeading,
+  takeEvery,
+} from "redux-saga/effects";
 import { GridRowId, GridValidRowModel } from "@mui/x-data-grid";
 import axios from "axios";
 import {
@@ -96,7 +102,7 @@ function* watchRemoveStudent(action: PayloadAction<GridRowId>) {
 }
 
 export function* userSaga(): Generator<any, any, any> {
-  yield takeLatest(fetchAllStudents, watchGetAllStudents);
+  yield takeEvery(fetchAllStudents, watchGetAllStudents);
   yield takeLatest(addStudent.type, watchAddNewStudent);
   yield takeLeading(editStudent.type, watchUpdateStudent);
   yield takeLeading(removeStudent, watchRemoveStudent);

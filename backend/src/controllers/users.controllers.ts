@@ -119,7 +119,7 @@ export const registerUser = async (
     const newUser = {
       email,
       name,
-      role: 'Observer',
+      role: 'Admin',
       password: hashedPassword,
       tempToken: ''
     };

@@ -1,4 +1,4 @@
-import { takeLatest, call, put } from "redux-saga/effects";
+import { takeLatest, call, put, takeEvery } from "redux-saga/effects";
 import { PayloadAction } from "@reduxjs/toolkit";
 import {
   ILoginCredentials,
@@ -118,6 +118,7 @@ function* watchVerifyUser(): Generator<any, any, any> {
     const data = yield res.data;
     if (res.status === 200) {
       yield put(setAutherization(true));
+      yield put(setAuthorizationError(false));
       yield put(setUserRole(data.role as string));
     }
     if (res.status === 401) {
@@ -133,8 +134,8 @@ function* watchVerifyUser(): Generator<any, any, any> {
 export function* userRoleSaga() {
   yield takeLatest(addUsers, watchSendMail);
   yield takeLatest(createUsers, watchCreateUser);
-  yield takeLatest(loginUsers, watchLoginUser);
+  yield takeEvery(loginUsers, watchLoginUser);
   yield takeLatest(logoutUsers, watchLogoutUser);
   yield takeLatest(registerUsers, watchRegisterUser);
-  yield takeLatest(verifyUsers, watchVerifyUser);
+  yield takeEvery(verifyUsers, watchVerifyUser);
 }
