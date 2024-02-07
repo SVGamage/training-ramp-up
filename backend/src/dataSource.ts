@@ -14,7 +14,7 @@ const AppDataSource = new DataSource({
   // database: process.env.DB_DATABASE,
   // password: process.env.DB_PASSWD,
   // host: process.env.DB_HOST,
-  // port: Number(process.env.DB_PORT),
+  port: Number(process.env.DB_PORT),
   entities: [Student, Users],
   synchronize: true,
   logging: false

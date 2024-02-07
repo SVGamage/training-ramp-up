@@ -55,10 +55,11 @@ import { ageCalculator } from "../../utility/ageCalculator";
 import { validatePhoneNumber } from "../../utility/validatePhoneNumber";
 import { dataGridStyles } from "../../styles/dataGridStyles";
 import PopupMessage from "../PopupMessage/PopupMessage";
-import io from "socket.io-client";
 import AddNewUserForm from "../AddNewUserForm/AddNewUserForm";
+// import io from "socket.io-client";
 // const socket = io("https://ramp-up-backend.onrender.com");
-const socket = io("http://localhost:5000");
+// const socket = io("http://localhost:5000");
+import { socket } from "../..";
 
 let idValue = 0;
 
@@ -149,7 +150,7 @@ function EditToolbar(props: IEditToolbarProps) {
             padding="12px"
             sx={{ fontSize: "24px", fontWeight: 400, fontFamily: "Roboto" }}
           >
-            User Details
+            Students Details
           </Typography>
         </Grid>
       </Grid>
@@ -194,6 +195,7 @@ const AdminDataGridTable = () => {
     (state: RootState) => state.student.userFetchingError
   );
   const dispatch = useDispatch();
+
   const [numbervalidateError, setNumberValidateError] = useState(false);
   const [agevalidateError, setAgeValidateError] = useState(false);
   const [keepEditingPopup, setKeepEditingPopup] = useState(false);
@@ -214,9 +216,7 @@ const AdminDataGridTable = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    socket.on("get_all_students", (data) => {
-      console.log("getAll: ", data);
-    });
+    socket.on("get_all_students", (data) => {});
     socket.on("create_new_student", (data) => {
       if (data === 201) {
         setAddedSuccessfullyPopup(true);
@@ -278,6 +278,7 @@ const AdminDataGridTable = () => {
   const handleConfirmDeleteClick = (id: GridRowId) => {
     dispatch(updateStudent(initialRows.filter((row) => row.id !== id)));
     dispatch(removeStudent(id));
+    socket.emit("removeStudent", id.toString());
     idReducer();
   };
 
@@ -345,8 +346,11 @@ const AdminDataGridTable = () => {
     try {
       if ("isNew" in newRow) {
         dispatch(addStudent(student));
+        console.log(student.id.toString());
+        socket.emit("createStudent", student.mobileno);
       } else {
         dispatch(editStudent(student));
+        socket.emit("updateStudent", student.id.toString());
       }
       dispatch(
         updateStudent(

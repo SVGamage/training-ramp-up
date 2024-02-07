@@ -19,8 +19,9 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { addUsers } from "../../redux/slice/userSlice";
 import { validateEmail } from "../../utility/emailValidator";
-import { io } from "socket.io-client";
-const socket = io("http://localhost:5000");
+// import { io } from "socket.io-client";
+// const socket = io("http://localhost:5000");
+import { socket } from "../..";
 interface IProps {
   openPopup: boolean;
   closePopup: () => void;
@@ -85,6 +86,7 @@ const AddNewUserForm = ({ openPopup, closePopup }: IProps) => {
         dispatch(
           addUsers({ name: name, email: email, role: role, password: "12345" })
         );
+        socket.emit("sendMail", email);
       }
     }
   };

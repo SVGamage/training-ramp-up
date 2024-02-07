@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
 import AppDataSource from '../dataSource';
 import { Users } from '../models/user';
-import { type Request, type Response } from 'express';
+import { type NextFunction, type Request, type Response } from 'express';
 import { sendMail, transporter } from '../sendEmails';
 import * as jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -94,5 +95,165 @@ export const createUser = async (
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const registerUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { name, email, password } = req.body;
+
+  try {
+    const userRepo = AppDataSource.getRepository(Users);
+    const selectedUser = await userRepo.findOne({
+      where: { email }
+    });
+    if (selectedUser !== null) {
+      res.status(400).json({ message: 'User already registered!' });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(password as string, 10);
+
+    const newUser = {
+      email,
+      name,
+      role: 'Observer',
+      password: hashedPassword,
+      tempToken: ''
+    };
+    const createdUser = userRepo.create(newUser as Users);
+    await userRepo.save(createdUser);
+    res.status(200).json({ message: 'User is registered' });
+  } catch (err) {
+    console.error(err);
+    res.status(404).json({ message: 'User is not registered' });
+  }
+};
+
+export const loginUser = async (
+  req: Request,
+  res: Response
+): Promise<string | null> => {
+  const { email, password } = req.body;
+  let userRole = null;
+  try {
+    const userRepo = AppDataSource.getRepository(Users);
+    const selectedUser = await userRepo.findOne({
+      where: { email }
+    });
+
+    if (
+      selectedUser !== null &&
+      (await bcrypt.compare(password as string, selectedUser.password))
+    ) {
+      const accessToken = jwt.sign(
+        {
+          user: {
+            email: selectedUser.email,
+            role: selectedUser.role
+          }
+        },
+        SECRET_KEY,
+        { expiresIn: '1hr' }
+      );
+
+      if (req.cookies.userToken !== null) {
+        req.cookies.userToken = '';
+      }
+
+      res
+        .cookie('userToken', accessToken, {
+          path: '/',
+          expires: new Date(Date.now() + 1000 * 60 * 60),
+          httpOnly: true,
+          sameSite: 'lax'
+        })
+        .status(200)
+        .json({ message: 'Login Successfully.' });
+      userRole = selectedUser.role;
+    } else {
+      res.status(401).json({ error: 'Authentication Failed' });
+    }
+  } catch {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+
+  return userRole;
+};
+
+export const getAllUsers = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userRepo = AppDataSource.getRepository(Users);
+    const users = await userRepo.find();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const logoutUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const cookie = req.headers.cookie!;
+    if (cookie === undefined) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+    const token = cookie.split('=')[1];
+    if (token === null) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+    const decoded = jwt.verify(token, SECRET_KEY, (error, data) => {
+      if (error !== null) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      const email: string = (data as jwt.JwtPayload).user.email as string;
+      res.clearCookie('userToken');
+      req.cookies.userToken = '';
+      return res.status(200).json({ message: 'Logout Successfully' });
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal  Server Error' });
+  }
+};
+
+export const veryfyUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const cookie = req.headers.cookie!;
+    if (cookie === undefined) {
+      res.status(401).json({ message: 'User is  not verified' });
+      return;
+    }
+    const token = cookie.split('=')[1];
+    if (token === null) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+    const decoded = jwt.verify(token, SECRET_KEY, (error, data) => {
+      if (error !== null) {
+        console.log(error);
+        res.status(401).json({ message: 'Token is not valid' });
+        return;
+      }
+      req.body.role = (data as jwt.JwtPayload).user.role;
+      res.status(200).json({
+        message: 'User is verified',
+        role: (data as jwt.JwtPayload).user.role
+      });
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internel server Error' });
   }
 };

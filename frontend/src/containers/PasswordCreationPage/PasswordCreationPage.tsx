@@ -17,9 +17,10 @@ import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import validator from "validator";
 import { createUsers } from "../../redux/slice/userSlice";
-import { io } from "socket.io-client";
 import PopupMessage from "../../components/PopupMessage/PopupMessage";
-const socket = io("http://localhost:5000");
+// import { io } from "socket.io-client";
+// const socket = io("http://localhost:5000");
+import { socket } from "../..";
 const PasswordCreationPage = () => {
   const isMobile = useMediaQuery("(max-width: 600px)");
   const [password, setPassword] = useState("");
@@ -235,7 +236,7 @@ const PasswordCreationPage = () => {
           title={"Your account has been successfully created."}
           handleClickSecondButton={() => {
             setSuccessMessage(false);
-            navigate("/");
+            navigate("/login");
           }}
           secondButtonName="Ok"
         />

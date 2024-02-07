@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
-
+const frontendUrl = process.env.FRONTEND_URL!;
 export const transporter = nodemailer.createTransport({
   service: 'gmail',
   host: 'smtp.gmail.com',
@@ -20,7 +20,7 @@ export const sendMail = async (
   name: string,
   token: string
 ): Promise<void> => {
-  const link = 'http://localhost:3000/passwordcreate';
+  const link = `${frontendUrl}/passwordcreate`;
   const mailOptions = {
     from: {
       name: 'Ramp-up',

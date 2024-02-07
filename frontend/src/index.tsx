@@ -7,18 +7,31 @@ import { Provider } from "react-redux";
 import LoginPage from "./containers/LoginPage/LoginPage";
 import HomePage from "./containers/HomePage/HomePage";
 import PasswordCreationPage from "./containers/PasswordCreationPage/PasswordCreationPage";
+import ObserversRegisterPage from "./containers/ObserversRegisterPage/ObserversRegisterPage";
+import { io } from "socket.io-client";
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+const backendUrl = process.env.REACT_APP_BACKEND!;
+export const socket = io(backendUrl);
 const routes = createBrowserRouter([
   {
-    path: "/",
+    path: "/login",
     element: <LoginPage />,
   },
   {
-    path: "/home",
-    element: <HomePage />,
+    path: "/",
+    element: (
+      <ProtectedRoute>
+        <HomePage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/passwordcreate",
     element: <PasswordCreationPage />,
+  },
+  {
+    path: "/register",
+    element: <ObserversRegisterPage />,
   },
 ]);
 const root = ReactDOM.createRoot(

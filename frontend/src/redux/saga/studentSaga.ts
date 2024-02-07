@@ -13,19 +13,22 @@ import {
   updateStudentError,
 } from "../slice/studentSlice";
 import { PayloadAction } from "@reduxjs/toolkit";
-
-const apiUrl = process.env.REACT_APP_API_URL;
+axios.defaults.withCredentials = true;
+const apiUrl = process.env.REACT_APP_API_STUDENTS as string;
 
 function* watchGetAllStudents(): Generator<any, any, any> {
   try {
     const { data } = yield call(
       axios.get<GridValidRowModel[]>,
-      `${apiUrl}/getAllStudents`
+      `${apiUrl}/getAllStudents`,
+      {
+        withCredentials: true,
+      }
     );
     yield put(updateStudent(data));
   } catch (error: any) {
     yield put(fetchStudentsError(error));
-    yield put(fetchAllStudents());
+
     console.log(error);
   }
 }
@@ -46,11 +49,13 @@ function* watchAddNewStudent(
     yield call(
       axios.post<GridValidRowModel>,
       `${apiUrl}/newStudent`,
-      newStudent
+      newStudent,
+      {
+        withCredentials: true,
+      }
     );
   } catch (error: any) {
     yield put(addStudentError());
-    yield put(fetchAllStudents());
     return error;
   }
 }
@@ -68,21 +73,24 @@ function* watchUpdateStudent(action: PayloadAction<GridValidRowModel>) {
     yield call(
       axios.put<GridValidRowModel>,
       `${apiUrl}/updateStudent/${action.payload.id}`,
-      updatedStudent
+      updatedStudent,
+      {
+        withCredentials: true,
+      }
     );
   } catch (error: any) {
     yield put(updateStudentError(error));
-    yield put(fetchAllStudents());
     return error;
   }
 }
 
 function* watchRemoveStudent(action: PayloadAction<GridRowId>) {
   try {
-    yield call(axios.delete, `${apiUrl}/removeStudent/${action.payload}`);
+    yield call(axios.delete, `${apiUrl}/removeStudent/${action.payload}`, {
+      withCredentials: true,
+    });
   } catch (error: any) {
     yield put(removeStudentError(error));
-    yield put(fetchAllStudents());
     return error;
   }
 }

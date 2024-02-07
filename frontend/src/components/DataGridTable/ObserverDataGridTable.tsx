@@ -24,9 +24,10 @@ import {
 import { formatPhoneNumber } from "../../utility/formatPhoneNumber";
 import { dataGridStyles } from "../../styles/dataGridStyles";
 import PopupMessage from "../PopupMessage/PopupMessage";
-import io from "socket.io-client";
+// import io from "socket.io-client";
+// const socket = io("http://localhost:5000");
 // const socket = io("https://ramp-up-backend.onrender.com");
-const socket = io("http://localhost:5000");
+import { socket } from "../..";
 
 function EditToolbar() {
   return (
@@ -37,7 +38,7 @@ function EditToolbar() {
             padding="12px"
             sx={{ fontSize: "24px", fontWeight: 400, fontFamily: "Roboto" }}
           >
-            User Details
+            Students Details
           </Typography>
         </Grid>
       </Grid>
@@ -231,6 +232,8 @@ const ObserverDataGridTable = () => {
         <Paper
           sx={{
             height: "auto",
+            width: "81.3%",
+            margin: "auto",
           }}
         >
           <DataGrid
