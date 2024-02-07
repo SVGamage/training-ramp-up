@@ -42,14 +42,14 @@ const userSlice = createSlice({
     logoutUsers: (state) => {},
     registerUsers: (state, action: PayloadAction<IRegisterUser>) => {},
     verifyUsers: (state) => {},
-    setAutherization: (state, action: PayloadAction<boolean>) => {
-      state.isAuthorized = action.payload;
-    },
-    setAuthorizationError: (state, action: PayloadAction<boolean>) => {
-      state.authorizationError = action.payload;
-    },
-    setUserRole: (state, action: PayloadAction<string>) => {
+    setAutherization: (state, action: PayloadAction<string>) => {
+      state.isAuthorized = true;
+      state.authorizationError = false;
       state.userRole = action.payload;
+    },
+    setUnautherization: (state) => {
+      state.isAuthorized = false;
+      state.authorizationError = true;
     },
   },
 });
@@ -62,8 +62,7 @@ export const {
   registerUsers,
   verifyUsers,
   setAutherization,
-  setAuthorizationError,
-  setUserRole,
+  setUnautherization,
 } = userSlice.actions;
 
 export default userSlice.reducer;

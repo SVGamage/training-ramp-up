@@ -11,8 +11,7 @@ import {
   logoutUsers,
   registerUsers,
   setAutherization,
-  setAuthorizationError,
-  setUserRole,
+  setUnautherization,
   verifyUsers,
 } from "../slice/userSlice";
 import axios from "axios";
@@ -62,8 +61,6 @@ function* watchLoginUser(
 ): Generator<any, any, any> {
   const { email, password } = action.payload;
   try {
-    yield put(setAuthorizationError(false));
-    yield put(setAutherization(false));
     yield call(
       axios.post<ILoginCredentials>,
       `${apiUrl}/loginUser`,
@@ -110,31 +107,27 @@ function* watchRegisterUser(
 }
 function* watchVerifyUser(): Generator<any, any, any> {
   try {
-    yield put(setAuthorizationError(false));
-    yield put(setAutherization(false));
     const res = yield call(axios.post, `${apiUrl}/verifyAuth`, {
       withCredentials: true,
     });
-    const data = yield res.data;
+    const data = res.data;
+    console.log(data.role as string);
+    console.log(res.status);
     if (res.status === 200) {
-      yield put(setAutherization(true));
-      yield put(setAuthorizationError(false));
-      yield put(setUserRole(data.role as string));
+      yield put(setAutherization(data.role as string));
     }
     if (res.status === 401) {
-      yield put(setAutherization(false));
-      yield put(setAuthorizationError(true));
+      yield put(setUnautherization());
     }
   } catch (error) {
-    yield put(setAutherization(false));
-    yield put(setAuthorizationError(true));
+    yield put(setUnautherization());
     return error;
   }
 }
 export function* userRoleSaga() {
   yield takeLatest(addUsers, watchSendMail);
   yield takeLatest(createUsers, watchCreateUser);
-  yield takeEvery(loginUsers, watchLoginUser);
+  yield takeLatest(loginUsers, watchLoginUser);
   yield takeLatest(logoutUsers, watchLogoutUser);
   yield takeLatest(registerUsers, watchRegisterUser);
   yield takeEvery(verifyUsers, watchVerifyUser);
