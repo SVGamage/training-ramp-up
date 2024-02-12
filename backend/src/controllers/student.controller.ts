@@ -1,76 +1,68 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import {
+  createStudent,
+  getAllStudents,
+  removeStudent,
+  updateStudent
+} from '../services/student.services';
 import { type Request, type Response } from 'express';
-import { Student } from '../models/student';
-import AppDataSource from '../dataSource';
-
-export const createStudent = async (
+import { io, studentSocketMap } from '../index';
+export const getAllStudentsController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const studentRepo = AppDataSource.getRepository(Student);
-    const newStudent = studentRepo.create(req.body);
-    await studentRepo.save(newStudent);
-    res.status(201).json(newStudent);
-  } catch (error) {
-    res.status(500).json({ error: 'internal server error' });
-  }
-};
-
-export const getAllStudents = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const studentRepo = AppDataSource.getRepository(Student);
-    const allStudents = await studentRepo.find();
-    res.status(201).json(allStudents);
-  } catch (error) {
-    res.status(500).json({ error: 'internal server error' });
-  }
-};
-
-export const updateStudent = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const studentRepo = AppDataSource.getRepository(Student);
-    const selectedStudent = await studentRepo.findOne({
-      where: { id: parseInt(id) }
+    await getAllStudents(req, res).then(() => {
+      io.emit('get_all_students', res.statusCode);
     });
-
-    if (selectedStudent == null) {
-      res.status(404).json({ error: 'student not found' });
-    } else {
-      studentRepo.merge(selectedStudent, req.body);
-      const updatedStudent = await studentRepo.save(selectedStudent);
-      res.status(201).json(updatedStudent);
-    }
   } catch (error) {
-    res.status(500).json({ error: 'internal server error' });
+    console.error(error);
   }
 };
 
-export const removeStudent = async (
+export const removeStudentController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const { id } = req.params;
-    const studentRepo = AppDataSource.getRepository(Student);
-    const selectedStudent = await studentRepo.findOne({
-      where: { id: parseInt(id) }
+    const socketId = studentSocketMap.get(req.params.id);
+    await removeStudent(req, res).then(() => {
+      if (socketId !== null) {
+        io.to(socketId!).emit('remove_student', res.statusCode);
+      }
     });
-
-    if (selectedStudent == null) {
-      res.status(404).json({ error: 'student not found' });
-    } else {
-      await studentRepo.remove(selectedStudent);
-      res.status(204).end();
-    }
   } catch (error) {
-    res.status(500).json({ error: 'internal server error' });
+    console.error(error);
+  }
+};
+
+export const createStudentController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const socketId = studentSocketMap.get(req.body.mobileno as string);
+    await createStudent(req, res).then(() => {
+      if (socketId !== null) {
+        io.to(socketId!).emit('create_new_student', res.statusCode);
+      }
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const updateStudentController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const socketId = studentSocketMap.get(req.params.id);
+    await updateStudent(req, res).then(() => {
+      if (socketId !== null) {
+        io.to(socketId!).emit('update_student', res.statusCode);
+      }
+    });
+  } catch (error) {
+    console.error(error);
   }
 };

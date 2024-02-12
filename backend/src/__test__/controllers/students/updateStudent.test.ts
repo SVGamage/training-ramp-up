@@ -1,46 +1,48 @@
 import { type Request, type Response } from 'express';
-import { Student } from '../../models/student';
-import AppDataSource from '../../dataSource';
-import { removeStudent } from '../../controllers/student.controller';
+import { Student } from '../../../models/student';
+import AppDataSource from '../../../dataSource';
+import { updateStudent } from '../../../services/student.services';
 
-jest.mock('../../dataSource', () => ({
+jest.mock('../../../dataSource', () => ({
   getRepository: jest.fn().mockReturnValue({
     findOne: jest.fn(),
-    remove: jest.fn()
+    merge: jest.fn(),
+    save: jest.fn()
   })
 }));
 
-describe('removeStudent', () => {
+describe('updateStudent', () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
 
   beforeEach(() => {
     req = {
-      params: { id: '1' }
+      params: { id: '1' },
+      body: { name: 'John Doe' }
     };
     res = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
-      end: jest.fn()
+      json: jest.fn()
     };
   });
 
-  it('should remove a student', async () => {
+  it('should update a student', async () => {
     const mockStudent = { id: 1, name: 'John Doe' };
     const studentRepo = AppDataSource.getRepository(Student);
     (studentRepo.findOne as jest.Mock).mockResolvedValue(mockStudent);
+    (studentRepo.save as jest.Mock).mockResolvedValue(mockStudent);
 
-    await removeStudent(req as Request, res as Response);
+    await updateStudent(req as Request, res as Response);
 
-    expect(res.status).toHaveBeenCalledWith(204);
-    expect(res.end).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(mockStudent);
   });
 
   it('should handle student not found', async () => {
     const studentRepo = AppDataSource.getRepository(Student);
     (studentRepo.findOne as jest.Mock).mockResolvedValue(null);
 
-    await removeStudent(req as Request, res as Response);
+    await updateStudent(req as Request, res as Response);
 
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({ error: 'student not found' });
@@ -52,7 +54,7 @@ describe('removeStudent', () => {
       new Error('Test error')
     );
 
-    await removeStudent(req as Request, res as Response);
+    await updateStudent(req as Request, res as Response);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: 'internal server error' });

@@ -246,11 +246,13 @@ export const veryfyUser = async (
         res.status(401).json({ message: 'Token is not valid' });
         return;
       }
-      req.body.role = (data as jwt.JwtPayload).user.role;
-      res.status(200).json({
-        message: 'User is verified',
-        role: (data as jwt.JwtPayload).user.role
-      });
+      if ((data as jwt.JwtPayload).user.role !== undefined) {
+        req.body.role = (data as jwt.JwtPayload).user.role;
+        res.status(200).json({
+          message: 'User is verified',
+          role: (data as jwt.JwtPayload).user.role
+        });
+      }
     });
   } catch (error) {
     console.log(error);

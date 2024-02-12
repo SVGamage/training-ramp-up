@@ -1,9 +1,9 @@
 import { type Request, type Response } from 'express';
-import { Student } from '../../models/student';
-import AppDataSource from '../../dataSource';
-import { createStudent } from '../../controllers/student.controller';
+import { Student } from '../../../models/student';
+import AppDataSource from '../../../dataSource';
+import { createStudent } from '../../../services/student.services';
 
-jest.mock('../../dataSource', () => ({
+jest.mock('../../../dataSource', () => ({
   getRepository: jest.fn().mockReturnValue({
     create: jest.fn(),
     save: jest.fn()

@@ -111,8 +111,6 @@ function* watchVerifyUser(): Generator<any, any, any> {
       withCredentials: true,
     });
     const data = res.data;
-    console.log(data.role as string);
-    console.log(res.status);
     if (res.status === 200) {
       yield put(setAutherization(data.role as string));
     }

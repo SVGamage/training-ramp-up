@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { Navigate } from "react-router-dom";
 
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,21 +17,16 @@ const ProtectedRoute = ({ children }: any) => {
   );
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  useEffect(() => {
-    dispatch(verifyUsers());
-  }, [dispatch]);
 
   useEffect(() => {
-    console.log("isAuthorized:", isAuthorized);
-    console.log("authorizationError:", authorizationError);
-  }, [isAuthorized, authorizationError]);
+    dispatch(verifyUsers());
+  }, []);
 
   if (isAuthorized === true) {
     return children;
   } else {
     if (authorizationError === true) {
-      navigate("/login", { replace: true });
+      return <Navigate to={"/login"} replace />;
     }
     return <LoadingComponent />;
   }

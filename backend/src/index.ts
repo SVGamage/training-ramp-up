@@ -15,15 +15,15 @@ const frontendUrl = process.env.FRONTEND_URL!;
 const app: express.Application = express();
 app.use(cors({ origin: frontendUrl, credentials: true }));
 const server = http.createServer(app);
-const io = new Server(server, {
+export const io = new Server(server, {
   cors: {
     origin: frontendUrl,
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     credentials: true
   }
 });
-const userSocketMap = new Map<string, string>();
-const studentSocketMap = new Map<string, string>();
+export const userSocketMap = new Map<string, string>();
+export const studentSocketMap = new Map<string, string>();
 io.on('connection', (socket) => {
   // console.log(socket.id);
   socket.on('login', (userId: string) => {
@@ -47,8 +47,8 @@ io.on('connection', (socket) => {
 });
 app.use(cookieParser());
 app.use(express.json());
-app.use('/students', socketRouter(io, studentSocketMap));
-app.use('/users', userSocketRouter(io, userSocketMap));
+app.use('/students', socketRouter());
+app.use('/users', userSocketRouter());
 server.listen(5000, () => {
   console.log('server is running on port: 5000');
 });

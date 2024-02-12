@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import {
   Box,
   Button,
@@ -9,12 +10,13 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { loginUsers } from "../../redux/slice/userSlice";
+import { loginUsers, setAutherization } from "../../redux/slice/userSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 // import { io } from "socket.io-client";
 // const socket = io("http://localhost:5000");
 import { socket } from "../..";
+
 const LoginPage = () => {
   const isMobile = useMediaQuery("(max-width: 600px)");
   const [email, setEmail] = useState("");
@@ -30,6 +32,7 @@ const LoginPage = () => {
   useEffect(() => {
     socket.on("login_user", (data) => {
       if (data.statusCode === 200) {
+        dispatch(setAutherization(data.role as string));
         navigate("/", { state: { role: data.role } });
       }
       if (data.statusCode === 401) {
