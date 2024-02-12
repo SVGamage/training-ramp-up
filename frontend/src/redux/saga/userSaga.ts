@@ -16,7 +16,7 @@ import {
 } from "../slice/userSlice";
 import axios from "axios";
 axios.defaults.withCredentials = true;
-const apiUrl = process.env.REACT_APP_API_USERS as string;
+const apiUrl = process.env.REACT_APP_BACKEND as string;
 function* watchSendMail(
   action: PayloadAction<IUsers>
 ): Generator<any, any, any> {
@@ -27,7 +27,7 @@ function* watchSendMail(
     password: action.payload.password,
   };
   try {
-    yield call(axios.post<IUsers>, `${apiUrl}/emailSend`, newUser, {
+    yield call(axios.post<IUsers>, `${apiUrl}/users/emailSend`, newUser, {
       withCredentials: true,
     });
   } catch (error: any) {
@@ -42,7 +42,7 @@ function* watchCreateUser(
   try {
     yield call(
       axios.post<IPasswordToken>,
-      `${apiUrl}/newUser`,
+      `${apiUrl}/users/newUser`,
       {
         password,
         token,
@@ -63,7 +63,7 @@ function* watchLoginUser(
   try {
     yield call(
       axios.post<ILoginCredentials>,
-      `${apiUrl}/loginUser`,
+      `${apiUrl}/users/loginUser`,
       {
         email,
         password,
@@ -77,7 +77,7 @@ function* watchLoginUser(
 
 function* watchLogoutUser(): Generator<any, any, any> {
   try {
-    yield call(axios.post, `${apiUrl}/logoutUser`, {
+    yield call(axios.post, `${apiUrl}/users/logoutUser`, {
       withCredentials: true,
     });
   } catch (error: any) {
@@ -91,7 +91,7 @@ function* watchRegisterUser(
   try {
     yield call(
       axios.post<IRegisterUser>,
-      `${apiUrl}/registerUser`,
+      `${apiUrl}/users/registerUser`,
       {
         name,
         email,
@@ -107,7 +107,7 @@ function* watchRegisterUser(
 }
 function* watchVerifyUser(): Generator<any, any, any> {
   try {
-    const res = yield call(axios.post, `${apiUrl}/verifyAuth`, {
+    const res = yield call(axios.post, `${apiUrl}/users/verifyAuth`, {
       withCredentials: true,
     });
     const data = res.data;
