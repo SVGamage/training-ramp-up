@@ -1,5 +1,5 @@
 staticSites:
-  - name: frontend
+  - name: ramp-up-frontend
     buildCommand: npm run build
     publishDir: build
     routes:
