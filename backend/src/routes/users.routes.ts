@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { Router } from 'express';
-import { getAllUsers, veryfyUser } from '../services/users.services';
+import {
+  getAllUsers,
+  refreshToken,
+  veryfyUser
+} from '../services/users.services';
 import { verifyToken } from '../middleware/auth';
 import { verifyAdmin } from '../middleware/verifyAdmin';
 import {
@@ -20,5 +24,6 @@ export default function userSocketRouter(): Router {
   userRouter.get('/getUsers', verifyToken, verifyAdmin, getAllUsers);
   userRouter.post('/logoutUser', logoutUserController);
   userRouter.post('/verifyAuth', veryfyUser);
+  userRouter.post('/refreshtoken', refreshToken);
   return userRouter;
 }

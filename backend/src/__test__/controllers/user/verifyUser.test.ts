@@ -1,69 +1,60 @@
-// import { type Request, type Response } from 'express';
-// import jwt from 'jsonwebtoken';
-// import { veryfyUser } from '../../../controllers/user.controller'; // import your function
+import { veryfyUser } from '../../../services/users.services';
+import { type Request, type Response } from 'express';
+import jwt from 'jsonwebtoken';
 
-// jest.mock('jsonwebtoken', () => ({
-//   verify: jest.fn()
-// }));
+jest.mock('jsonwebtoken', () => ({
+  verify: jest.fn()
+}));
 
-// describe('verifyUser', () => {
-//   let req: Partial<Request>;
-//   let res: Partial<Response>;
+describe('verifyUser', () => {
+  let req: Partial<Request>;
+  let res: Partial<Response>;
 
-//   beforeEach(() => {
-//     req = {
-//       headers: {
-//         cookie: 'token=validToken'
-//       }
-//     };
-//     res = {
-//       status: jest.fn().mockReturnThis(),
-//       json: jest.fn()
-//     };
-//   });
+  beforeEach(() => {
+    req = {
+      cookies: { accessToken: 'validToken' },
+      body: {}
+    };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+  });
 
-//   it('should respond with 401 if no cookie is present', async () => {
-//     req.headers!.cookie = undefined;
+  it('should verify a user', async () => {
+    const mockJwtPayload = { user: { role: 'student' } };
+    (jwt.verify as jest.Mock).mockImplementation((token, secret, callback) => {
+      callback(null, mockJwtPayload);
+    });
 
-//     await veryfyUser(req as Request, res as Response);
+    await veryfyUser(req as Request, res as Response);
 
-//     expect(res.status).toHaveBeenCalledWith(401);
-//     expect(res.json).toHaveBeenCalledWith({ message: 'User is  not verified' });
-//   });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'User is verified',
+      role: 'student'
+    });
+  });
 
-//   it('should respond with 401 if token is not valid', async () => {
-//     (jwt.verify as jest.Mock).mockImplementation((token, secret, callback) => {
-//       callback(new Error('Token is not valid'));
-//     });
+  it('should handle invalid tokens', async () => {
+    (jwt.verify as jest.Mock).mockImplementation((token, secret, callback) => {
+      callback(new Error('Token is not valid'), null);
+    });
 
-//     await veryfyUser(req as Request, res as Response);
+    await veryfyUser(req as Request, res as Response);
 
-//     expect(res.status).toHaveBeenCalledWith(401);
-//     expect(res.json).toHaveBeenCalledWith({ message: 'Token is not valid' });
-//   });
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Token is not valid' });
+  });
 
-//   it('should respond with 200 if token is valid', async () => {
-//     (jwt.verify as jest.Mock).mockImplementation((token, secret, callback) => {
-//       callback(null, { user: { role: 'admin' } });
-//     });
+  it('should handle errors', async () => {
+    (jwt.verify as jest.Mock).mockImplementation(() => {
+      throw new Error('Test error');
+    });
 
-//     await veryfyUser(req as Request, res as Response);
+    await veryfyUser(req as Request, res as Response);
 
-//     expect(res.status).toHaveBeenCalledWith(200);
-//     expect(res.json).toHaveBeenCalledWith({
-//       message: 'User is verified',
-//       role: 'admin'
-//     });
-//   });
-
-//   it('should handle errors', async () => {
-//     (jwt.verify as jest.Mock).mockImplementation(() => {
-//       throw new Error('Internal server error');
-//     });
-
-//     await veryfyUser(req as Request, res as Response);
-
-//     expect(res.status).toHaveBeenCalledWith(500);
-//     expect(res.json).toHaveBeenCalledWith({ message: 'Internel server Error' });
-//   });
-// });
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Internel server Error' });
+  });
+});

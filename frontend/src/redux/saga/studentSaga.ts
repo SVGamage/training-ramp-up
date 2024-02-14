@@ -6,7 +6,6 @@ import {
   takeEvery,
 } from "redux-saga/effects";
 import { GridRowId, GridValidRowModel } from "@mui/x-data-grid";
-import axios from "axios";
 import {
   addStudent,
   addStudentError,
@@ -19,13 +18,14 @@ import {
   updateStudentError,
 } from "../slice/studentSlice";
 import { PayloadAction } from "@reduxjs/toolkit";
-axios.defaults.withCredentials = true;
+import { axiosInstance } from "../../utility/axiosInstance";
+axiosInstance.defaults.withCredentials = true;
 const apiUrl = process.env.REACT_APP_BACKEND as string;
 
 function* watchGetAllStudents(): Generator<any, any, any> {
   try {
     const { data } = yield call(
-      axios.get<GridValidRowModel[]>,
+      axiosInstance.get<GridValidRowModel[]>,
       `${apiUrl}/students/getAllStudents`,
       {
         withCredentials: true,
@@ -53,7 +53,7 @@ function* watchAddNewStudent(
   };
   try {
     yield call(
-      axios.post<GridValidRowModel>,
+      axiosInstance.post<GridValidRowModel>,
       `${apiUrl}/students/newStudent`,
       newStudent,
       {
@@ -77,7 +77,7 @@ function* watchUpdateStudent(action: PayloadAction<GridValidRowModel>) {
   };
   try {
     yield call(
-      axios.put<GridValidRowModel>,
+      axiosInstance.put<GridValidRowModel>,
       `${apiUrl}/students/updateStudent/${action.payload.id}`,
       updatedStudent,
       {
@@ -93,7 +93,7 @@ function* watchUpdateStudent(action: PayloadAction<GridValidRowModel>) {
 function* watchRemoveStudent(action: PayloadAction<GridRowId>) {
   try {
     yield call(
-      axios.delete,
+      axiosInstance.delete,
       `${apiUrl}/students/removeStudent/${action.payload}`,
       {
         withCredentials: true,

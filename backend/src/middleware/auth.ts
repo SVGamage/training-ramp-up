@@ -10,14 +10,9 @@ export const verifyToken = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const cookie = req.headers.cookie!;
-    if (cookie === undefined) {
-      res.status(401).json({ message: 'Unauthorized' });
-      return;
-    }
-    const token = cookie.split('=')[1];
+    const token = req.cookies.accessToken as string;
     if (token === null) {
-      res.status(401).json({ message: 'Unauthorized' });
+      res.status(401).json({ message: 'User is  not verified' });
       return;
     }
     const decoded = jwt.verify(token, SECRET_KEY, (error, data) => {

@@ -158,15 +158,34 @@ export const loginUser = async (
         SECRET_KEY,
         { expiresIn: '1hr' }
       );
+      const refreshToken = jwt.sign(
+        {
+          user: {
+            email: selectedUser.email,
+            role: selectedUser.role
+          }
+        },
+        SECRET_KEY,
+        { expiresIn: '7d' }
+      );
 
-      if (req.cookies.userToken !== null) {
-        req.cookies.userToken = '';
+      if (req.cookies.accessToken !== null) {
+        req.cookies.accessToken = '';
+      }
+      if (req.cookies.refreshToken !== null) {
+        req.cookies.refreshToken = '';
       }
 
       res
-        .cookie('userToken', accessToken, {
+        .cookie('accessToken', accessToken, {
           path: '/',
-          expires: new Date(Date.now() + 1000 * 60 * 60),
+          expires: new Date(Date.now() + 1000 * 60),
+          httpOnly: true,
+          sameSite: 'lax'
+        })
+        .cookie('refreshToken', refreshToken, {
+          path: '/',
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
           httpOnly: true,
           sameSite: 'lax'
         })
@@ -201,25 +220,16 @@ export const logoutUser = async (
   res: Response
 ): Promise<void> => {
   try {
-    const cookie = req.headers.cookie!;
-    if (cookie === undefined) {
-      res.status(401).json({ message: 'Unauthorized' });
-      return;
-    }
-    const token = cookie.split('=')[1];
-    if (token === null) {
-      res.status(401).json({ message: 'Unauthorized' });
-      return;
-    }
-    const decoded = jwt.verify(token, SECRET_KEY, (error, data) => {
-      if (error !== null) {
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
-      const email: string = (data as jwt.JwtPayload).user.email as string;
-      res.clearCookie('userToken');
-      req.cookies.userToken = '';
-      return res.status(200).json({ message: 'Logout Successfully' });
-    });
+    res
+      .clearCookie('accessToken', {
+        httpOnly: true
+      })
+      .clearCookie('refreshToken', {
+        httpOnly: true
+      })
+      .status(200)
+      .json({ message: 'User logged out successfully' });
+    console.log('logout');
   } catch (error) {
     res.status(500).json({ message: 'Internal  Server Error' });
   }
@@ -230,19 +240,15 @@ export const veryfyUser = async (
   res: Response
 ): Promise<void> => {
   try {
-    const cookie = req.headers.cookie!;
-    if (cookie === undefined) {
+    const token = req.cookies.accessToken as string;
+
+    if (token === null || token === undefined) {
       res.status(401).json({ message: 'User is  not verified' });
       return;
     }
-    const token = cookie.split('=')[1];
-    if (token === null) {
-      res.status(401).json({ message: 'Unauthorized' });
-      return;
-    }
+
     const decoded = jwt.verify(token, SECRET_KEY, (error, data) => {
       if (error !== null) {
-        console.log(error);
         res.status(401).json({ message: 'Token is not valid' });
         return;
       }
@@ -255,7 +261,47 @@ export const veryfyUser = async (
       }
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: 'Internel server Error' });
   }
+};
+
+export const refreshToken = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const refreshToken = req.cookies.refreshToken as string;
+
+  if (refreshToken === null) {
+    res.status(401).json({ message: 'User is  not verified' });
+    return;
+  }
+
+  const decode = jwt.verify(refreshToken, SECRET_KEY, (err, data) => {
+    if (err !== null) {
+      res.status(403).json({ error: 'Invalid token.' });
+      return;
+    }
+
+    const accessToken = jwt.sign(
+      {
+        user: {
+          email: (data as jwt.JwtPayload).user.email,
+          role: (data as jwt.JwtPayload).user.role
+        }
+      },
+      SECRET_KEY,
+      {
+        expiresIn: '1h'
+      }
+    );
+    res
+      .cookie('accessToken', accessToken, {
+        path: '/',
+        expires: new Date(Date.now() + 1000 * 60),
+        httpOnly: true,
+        sameSite: 'lax'
+      })
+      .status(200)
+      .json({ message: 'Token refreshed successfully' });
+  });
 };

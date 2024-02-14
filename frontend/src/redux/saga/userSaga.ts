@@ -14,9 +14,12 @@ import {
   setUnautherization,
   verifyUsers,
 } from "../slice/userSlice";
+import { axiosInstance } from "../../utility/axiosInstance";
 import axios from "axios";
+axiosInstance.defaults.withCredentials = true;
 axios.defaults.withCredentials = true;
 const apiUrl = process.env.REACT_APP_BACKEND as string;
+
 function* watchSendMail(
   action: PayloadAction<IUsers>
 ): Generator<any, any, any> {
@@ -27,9 +30,14 @@ function* watchSendMail(
     password: action.payload.password,
   };
   try {
-    yield call(axios.post<IUsers>, `${apiUrl}/users/emailSend`, newUser, {
-      withCredentials: true,
-    });
+    yield call(
+      axiosInstance.post<IUsers>,
+      `${apiUrl}/users/emailSend`,
+      newUser,
+      {
+        withCredentials: true,
+      }
+    );
   } catch (error: any) {
     return error;
   }
@@ -77,7 +85,7 @@ function* watchLoginUser(
 
 function* watchLogoutUser(): Generator<any, any, any> {
   try {
-    yield call(axios.post, `${apiUrl}/users/logoutUser`, {
+    yield call(axiosInstance.post, `${apiUrl}/users/logoutUser`, {
       withCredentials: true,
     });
   } catch (error: any) {
@@ -107,7 +115,7 @@ function* watchRegisterUser(
 }
 function* watchVerifyUser(): Generator<any, any, any> {
   try {
-    const res = yield call(axios.post, `${apiUrl}/users/verifyAuth`, {
+    const res = yield call(axiosInstance.post, `${apiUrl}/users/verifyAuth`, {
       withCredentials: true,
     });
     const data = res.data;
