@@ -88,8 +88,6 @@ const PasswordCreationPage = () => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setConfirmPasswordError(false);
-    setPasswordError(false);
 
     if (password === "") {
       setPasswordError(true);
@@ -102,16 +100,17 @@ const PasswordCreationPage = () => {
 
     if (confirmPassword && password) {
       if (confirmPassword !== password) {
-        setPasswordHelperText("");
         setConfirmPasswordHelperText("Please make sure your passwords match!");
         setConfirmPasswordError(true);
       } else {
-        dispatch(
-          createUsers({
-            password: password,
-            token: query.get("token") as string,
-          })
-        );
+        if (passwordError === false) {
+          dispatch(
+            createUsers({
+              password: password,
+              token: query.get("token") as string,
+            })
+          );
+        }
       }
     }
   };

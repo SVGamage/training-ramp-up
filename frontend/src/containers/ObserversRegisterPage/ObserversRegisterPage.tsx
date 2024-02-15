@@ -106,10 +106,7 @@ const ObserversRegisterPage = () => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setConfirmPasswordError(false);
-    setPasswordError(false);
-    setNameError(false);
-    setEmailError(false);
+
     if (!validateEmail(email)) {
       setEmailHelperText("Please enter a valid email address");
       setEmailError(true);
@@ -136,8 +133,10 @@ const ObserversRegisterPage = () => {
         setConfirmPasswordHelperText("Please make sure your passwords match!");
         setConfirmPasswordError(true);
       } else {
-        dispatch(registerUsers({ name, email, password }));
-        socket.emit("register", email);
+        if (passwordError === false) {
+          dispatch(registerUsers({ name, email, password }));
+          socket.emit("register", email);
+        }
       }
     }
   };
