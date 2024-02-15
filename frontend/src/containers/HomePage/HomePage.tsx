@@ -23,17 +23,12 @@ const HomePage = () => {
     navigate("/login");
   };
 
-  const onActive = () => {};
-
-  const onAction = () => {};
   const onPrompt = () => {
     setOpen(true);
   };
 
   const { start } = useIdleTimer({
     onIdle,
-    onActive,
-    onAction,
     onPrompt,
     timeout: 1000 * 60 * 30,
     promptBeforeIdle: 1000 * 60 * 20,
@@ -52,12 +47,12 @@ const HomePage = () => {
       {open && (
         <PopupMessage
           open={open}
-          title="Keep Login..."
+          title="Session is about to expire...are you there?"
           handleClickSecondButton={() => {
             start();
             setOpen(false);
           }}
-          secondButtonName="Ok"
+          secondButtonName="I'm here"
         />
       )}
     </>

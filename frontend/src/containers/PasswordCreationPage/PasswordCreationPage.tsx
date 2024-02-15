@@ -18,8 +18,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import validator from "validator";
 import { createUsers } from "../../redux/slice/userSlice";
 import PopupMessage from "../../components/PopupMessage/PopupMessage";
-// import { io } from "socket.io-client";
-// const socket = io("http://localhost:5000");
+
 import { socket } from "../..";
 const PasswordCreationPage = () => {
   const isMobile = useMediaQuery("(max-width: 600px)");
@@ -106,7 +105,6 @@ const PasswordCreationPage = () => {
         setPasswordHelperText("");
         setConfirmPasswordHelperText("Please make sure your passwords match!");
         setConfirmPasswordError(true);
-        setPasswordError(true);
       } else {
         dispatch(
           createUsers({

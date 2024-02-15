@@ -135,7 +135,6 @@ const ObserversRegisterPage = () => {
       if (confirmPassword !== password) {
         setConfirmPasswordHelperText("Please make sure your passwords match!");
         setConfirmPasswordError(true);
-        setPasswordError(true);
       } else {
         dispatch(registerUsers({ name, email, password }));
         socket.emit("register", email);
